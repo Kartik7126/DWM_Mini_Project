@@ -1,5 +1,5 @@
 """
-Configuration, metadata, and styling constants for CardioInsight.
+Configuration, clinical metadata, and styling constants for the Cardiac Analytics & Resource Platform.
 """
 
 from typing import Dict, List, Any
@@ -202,11 +202,11 @@ THEME_COLORS = {
     ]
 }
 
-# Medical Disclaimer Text
+# Clinical Decision Support Advisory Notice
 MEDICAL_DISCLAIMER = (
-    "**Academic Analytical Prototype Notice:** CardioInsight is an educational Data Warehousing & Mining (DWM) "
-    "prototype developed for unsupervised patient profiling and hospital analytics using K-Means clustering. "
-    "It is **not** a certified medical diagnostic device or clinical decision support system. "
-    "Cluster memberships indicate similarity groupings within the analyzed cohort and do not establish medical diagnoses, "
-    "prognoses, or treatment recommendations. All clinical decisions must be made by qualified healthcare professionals."
+    "**Clinical Advisory & Decision Support Notice:** This system is an analytical support platform designed for "
+    "clinical cohort segmentation, risk factor assessment, and hospital operational resource planning. "
+    "Cluster memberships and risk profiles represent empirical cohort patterns and must not be used as a standalone "
+    "substitute for individualized clinical judgment. All patient diagnostic and treatment decisions must be made "
+    "by licensed healthcare professionals."
 )

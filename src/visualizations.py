@@ -426,3 +426,218 @@ def plot_similarity_to_all_clusters(similarity_percentages: Dict[int, float]) ->
     fig.update_xaxes(range=[0, max(pcts) * 1.25], title="Relative Similarity Profile (%)")
     fig.update_yaxes(autorange="reversed")
     return _apply_clinical_layout(fig, "Similarity Distribution Across Cohort Clusters", height=280)
+
+
+def plot_simple_patient_comparison(
+    patient_record: Dict[str, Any],
+    cluster_profile: Dict[str, Any]
+) -> go.Figure:
+    """
+    Simple, intuitive horizontal comparison bar chart showing how a patient's
+    key vitals compare directly against the cluster average.
+    100% represents the cluster average baseline.
+    """
+    num_stats = cluster_profile.get("numerical_stats", {})
+    features = [f for f in ["trestbps", "chol", "thalach", "oldpeak", "age"] if f in num_stats and f in patient_record]
+
+    labels = []
+    ratios = []
+    bar_texts = []
+    colors = []
+
+    for f in features:
+        disp_name = FEATURE_DEFINITIONS.get(f, {}).get("display_name", f)
+        unit = FEATURE_DEFINITIONS.get(f, {}).get("unit", "")
+        p_val = float(patient_record[f])
+        c_mean = float(num_stats[f]["mean"])
+
+        ratio = (p_val / c_mean * 100.0) if c_mean > 1e-4 else 100.0
+        ratios.append(round(ratio, 1))
+        labels.append(disp_name)
+
+        diff = p_val - c_mean
+        diff_str = f"+{diff:.1f}" if diff > 0 else f"{diff:.1f}"
+        bar_texts.append(f"Patient: {p_val:.1f} {unit}  (Cluster Avg: {c_mean:.1f} {unit} | {diff_str})")
+
+        if ratio > 105.0:
+            colors.append("#E11D48")  # Coral/Red (Higher than cluster average)
+        elif ratio < 95.0:
+            colors.append("#0284C7")  # Medical Blue (Lower than cluster average)
+        else:
+            colors.append("#0D9488")  # Teal (Matched to cluster average)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        y=labels,
+        x=ratios,
+        orientation="h",
+        marker_color=colors,
+        text=bar_texts,
+        textposition="inside",
+        insidetextanchor="start",
+        textfont={"size": 12, "color": "#FFFFFF"},
+        hovertemplate="<b>%{y}</b><br>%{text}<br>Level vs Cluster Avg: %{x:.1f}%<extra></extra>"
+    ))
+
+    # Reference line at 100% (Cluster Average Baseline)
+    fig.add_vline(
+        x=100.0,
+        line_dash="dash",
+        line_color="#0F172A",
+        line_width=2,
+        annotation_text="100% Cluster Average Baseline",
+        annotation_position="top right"
+    )
+
+    max_x = max(max(ratios) * 1.25, 130.0) if ratios else 130.0
+    fig.update_xaxes(
+        title="Patient Level Relative to Cluster Average (%)  [100% = Cluster Mean]",
+        range=[0, max_x]
+    )
+    fig.update_yaxes(autorange="reversed")
+
+    c_id = cluster_profile.get("cluster_id", "")
+    return _apply_clinical_layout(fig, f"Patient Vitals vs Cluster {c_id} Average", height=320)
+
+
+def plot_hospital_bed_allocation(resource_data: Dict[str, Any]) -> go.Figure:
+    """Stacked bar chart of hospital bed requirements by cluster."""
+    clusters = sorted(resource_data["clusters"].keys())
+    c_labels = [f"Cluster {c}" for c in clusters]
+
+    ccu_beds = [resource_data["clusters"][c]["bed_allocation"]["ccu_beds"] for c in clusters]
+    telemetry_beds = [resource_data["clusters"][c]["bed_allocation"]["telemetry_beds"] for c in clusters]
+    ward_beds = [resource_data["clusters"][c]["bed_allocation"]["ward_beds"] for c in clusters]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        name="CCU / ICU Beds",
+        x=c_labels,
+        y=ccu_beds,
+        marker_color="#E11D48",  # Rose-600
+        text=[f"{v} beds" if v > 0 else "" for v in ccu_beds],
+        textposition="inside",
+        hovertemplate="<b>%{x}</b><br>CCU/ICU Beds: %{y}<extra></extra>"
+    ))
+    fig.add_trace(go.Bar(
+        name="Telemetry Step-Down",
+        x=c_labels,
+        y=telemetry_beds,
+        marker_color="#D97706",  # Amber-600
+        text=[f"{v} beds" if v > 0 else "" for v in telemetry_beds],
+        textposition="inside",
+        hovertemplate="<b>%{x}</b><br>Telemetry Beds: %{y}<extra></extra>"
+    ))
+    fig.add_trace(go.Bar(
+        name="General Cardiology Ward",
+        x=c_labels,
+        y=ward_beds,
+        marker_color="#0D9488",  # Teal-600
+        text=[f"{v} beds" if v > 0 else "" for v in ward_beds],
+        textposition="inside",
+        hovertemplate="<b>%{x}</b><br>Ward Beds: %{y}<extra></extra>"
+    ))
+
+    fig.update_layout(barmode="stack")
+    fig.update_xaxes(title="Patient Phenotype Cluster")
+    fig.update_yaxes(title="Inpatient Beds Required")
+    return _apply_clinical_layout(fig, "Hospital Inpatient Bed Allocation by Cluster", height=380)
+
+
+def plot_diagnostic_procedural_load(resource_data: Dict[str, Any]) -> go.Figure:
+    """Grouped bar chart displaying diagnostic & procedural facility load."""
+    clusters = sorted(resource_data["clusters"].keys())
+    c_labels = [f"Cluster {c}" for c in clusters]
+
+    cath_slots = [resource_data["clusters"][c]["diagnostic_slots"]["cath_lab_slots"] for c in clusters]
+    echo_slots = [resource_data["clusters"][c]["diagnostic_slots"]["echo_slots"] for c in clusters]
+    spect_slots = [resource_data["clusters"][c]["diagnostic_slots"]["spect_ct_slots"] for c in clusters]
+    holter_slots = [resource_data["clusters"][c]["diagnostic_slots"]["holter_slots"] for c in clusters]
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(name="Cath Lab Angiography", x=c_labels, y=cath_slots, marker_color="#DC2626"))
+    fig.add_trace(go.Bar(name="Echocardiography (TTE)", x=c_labels, y=echo_slots, marker_color="#0284C7"))
+    fig.add_trace(go.Bar(name="Nuclear SPECT / CT", x=c_labels, y=spect_slots, marker_color="#8B5CF6"))
+    fig.add_trace(go.Bar(name="24-hr Holter ECG", x=c_labels, y=holter_slots, marker_color="#10B981"))
+
+    fig.update_layout(barmode="group")
+    fig.update_xaxes(title="Patient Phenotype Cluster")
+    fig.update_yaxes(title="Estimated Diagnostic Procedure Slots")
+    return _apply_clinical_layout(fig, "Diagnostic & Interventional Facility Demand", height=380)
+
+
+def plot_cluster_risk_radar(profiles: Dict[int, Dict[str, Any]]) -> go.Figure:
+    """Comparative polar radar chart displaying core clinical risk factor axes."""
+    categories = [
+        "Ischemic Stress (ST/Angina)",
+        "Hypertension (Stage 2)",
+        "Coronary Vessels (1+)",
+        "Perfusion Defect",
+        "Metabolic/Cholesterol"
+    ]
+    categories_closed = categories + [categories[0]]
+
+    fig = go.Figure()
+    clusters = sorted(profiles.keys())
+
+    for c in clusters:
+        risk = profiles[c].get("risk_profile", {}).get("risk_indicators", {})
+        if not risk:
+            continue
+
+        r_values = [
+            risk.get("ischemic_burden_pct", 0.0),
+            risk.get("htn_stage2_pct", 0.0),
+            risk.get("vessels_1plus_pct", 0.0),
+            risk.get("perfusion_defect_pct", 0.0),
+            risk.get("metabolic_pct", 0.0)
+        ]
+        r_values_closed = r_values + [r_values[0]]
+        color = THEME_COLORS["cluster_palette"][c % len(THEME_COLORS["cluster_palette"])]
+
+        fig.add_trace(go.Scatterpolar(
+            r=r_values_closed,
+            theta=categories_closed,
+            name=f"Cluster {c}",
+            line_color=color,
+            fill="toself",
+            fillcolor=f"rgba({int(color[1:3],16)}, {int(color[3:5],16)}, {int(color[5:7],16)}, 0.12)"
+        ))
+
+    fig.update_layout(
+        polar={
+            "radialaxis": {"visible": True, "range": [0, 100], "ticksuffix": "%", "tickfont": {"size": 9}},
+            "bgcolor": "#F8FAFC"
+        }
+    )
+    return _apply_clinical_layout(fig, "Cardiovascular Risk Factor Profiles Across Clusters", height=420)
+
+
+def plot_triage_acuity_donut(resource_data: Dict[str, Any]) -> go.Figure:
+    """Donut chart illustrating cohort volume across Clinical Acuity Tiers."""
+    tier_counts = {"Critical (CCU / Immediate)": 0, "Intermediate (Telemetry)": 0, "Ambulatory / Prevention": 0}
+
+    for c, c_info in resource_data["clusters"].items():
+        tier_key = c_info["risk_profile"].get("acuity_tier_key", "TIER_2")
+        count = c_info["patient_count"]
+        if tier_key == "TIER_1":
+            tier_counts["Critical (CCU / Immediate)"] += count
+        elif tier_key == "TIER_2":
+            tier_counts["Intermediate (Telemetry)"] += count
+        else:
+            tier_counts["Ambulatory / Prevention"] += count
+
+    labels = list(tier_counts.keys())
+    values = list(tier_counts.values())
+    colors = ["#E11D48", "#D97706", "#0D9488"]
+
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.45,
+        marker={"colors": colors, "line": {"color": "#FFFFFF", "width": 2}},
+        textinfo="percent+label",
+        hoverinfo="label+value+percent"
+    )])
+    return _apply_clinical_layout(fig, "Cohort Clinical Acuity Breakdown", height=380)

@@ -1,69 +1,69 @@
-# CardioInsight — Cardiac Patient Profiling & Hospital Analytics Using K-Means Clustering
+# Cardiac Phenotype Profiling & Hospital Resource Platform
 
-**CardioInsight** is an end-to-end clinical analytics and unsupervised machine learning web application developed as a **Data Warehousing and Mining (DWM)** academic mini-project. It employs K-Means clustering, standardized multivariate data pipelines, and interactive visual analytics to discover clinically meaningful patient phenotypes without diagnostic supervision.
-
----
-
-## 🫀 Clinical & Academic Disclaimer
-
-> **Important Notice:** CardioInsight is an educational research and analytical prototype. It is **not** a certified medical diagnostic device or clinical decision support system. Cluster memberships reflect statistical similarity within the analyzed cohort and do **not** establish a medical diagnosis, predict heart attacks, or prescribe clinical interventions. All patient care decisions must be made by qualified healthcare professionals.
+An end-to-end clinical analytics and unsupervised machine learning platform designed for cardiology departments and hospital administrators. It translates multidimensional cardiovascular patient profiles into actionable clinical phenotypes, automated hospital resource allocations (CCU, Telemetry, and Ward beds), diagnostic facility scheduling, and standardized care pathways.
 
 ---
 
-## 🏛️ DWM Concepts Demonstrated
+## 🏥 Clinical Decision Support Advisory
 
-| Concept | Implementation in CardioInsight |
+> **Notice:** This system is an analytical decision support tool designed for clinical cohort segmentation, risk factor assessment, and hospital operational resource planning. Cluster memberships and risk profiles represent empirical cohort patterns and must not be used as a standalone substitute for individualized clinical judgment. All patient diagnostic and treatment decisions must be made by licensed healthcare professionals.
+
+---
+
+## 🏛️ Clinical & Analytical Capabilities
+
+| Module | Operational & Clinical Impact |
 | :--- | :--- |
-| **Data Warehousing & ETL** | Ingestion of raw cardiovascular observations, column schema validation, automated missing-value auditing, median/mode imputation, and anonymous record indexing (`REC-001`). |
-| **Data Preprocessing & Scaling** | Strict separation of diagnostic labels (`target` excluded), one-hot encoding for multiclass features, and Z-score standardization via `StandardScaler` to prevent feature dominance in Euclidean space. |
-| **Model Reproducibility & Leakage Prevention** | Stateful transformer pipelines (`CardiacPreprocessor`) fit strictly on cohort data and applied consistently to hypothetical patients. |
-| **Unsupervised Clustering** | K-Means clustering with multiple initializations (`n_init=10`) and fixed random seeds. |
-| **Cluster Evaluation & Validation** | Multi-criteria evaluation combining the **Elbow Method** (Sum of Squared Errors / Inertia) and **Silhouette Analysis** (cohesion vs. separation) across candidate values of $K \in [2, 8]$. |
-| **Dimensionality Reduction** | Principal Component Analysis (PCA) projecting high-dimensional clinical feature vectors into 2D orthogonal components for spatial validation and centroid tracking. |
-| **Cluster Profiling & Phenotyping** | Generation of neutral, feature-based clinical labels, population Z-score deviation heatmaps, and distinguishing multivariate characteristics. |
-| **Out-of-Distribution (OOD) Guardrails** | Anomaly detection flagging patient entries exceeding cohort bounds or exhibiting extreme $|z| > 3.0$ deviations. |
+| **Cohort Phenotyping** | Unsupervised segmentation of multidimensional cardiovascular vitals into distinct clinical clusters using standardized Euclidean feature spaces. |
+| **Risk Factor Deconvolution** | Quantitative stratification of ischemic stress markers (ST depression, exercise-induced angina), Stage 2 systolic hypertension, multi-vessel coronary calcification, perfusion deficits, and chronotropic competence. |
+| **Hospital Capacity & Bed Allocation** | Dynamic projection of Coronary Care Unit (CCU/ICU) beds, Step-Down Telemetry beds, and General Ward beds based on active cluster acuity. |
+| **Diagnostic Scheduling** | Predictive estimation of procedural facility demand: Cardiac Catheterization Lab (Cath Lab) angiography, Echocardiography (TTE), Nuclear SPECT/CT scans, and 24-hr Holter ECG monitors. |
+| **Staffing Shift Projections** | Calculation of specialized critical care nursing ratios (1:1/1:2 for CCU, 1:3 for Telemetry, 1:5 for Ward) and attending cardiologist coverage hours. |
+| **Actionable Care Pathways** | Standardized, evidence-based hospital clinical protocols detailing emergency triage, diagnostic angiography urgency, guideline-directed pharmacotherapy (GDMT), and post-discharge Phase II Cardiac Rehabilitation enrollment. |
+| **Admissions Sizing Simulator** | Interactive capacity slider enabling hospital directors and nursing supervisors to simulate variable monthly inpatient intake volumes. |
+| **Individual Patient Triage & Intake** | Immediate similarity profiling of admitted patients, flagging physiological out-of-distribution values and generating patient-specific bed and diagnostic recommendations. |
 
 ---
 
-## 📁 Project Architecture
+## 📁 System Architecture
 
 ```
 DWM_Mini_Project/
-├── app.py                      # Main Streamlit web application & navigation
+├── app.py                      # Main Streamlit web application & 6-view clinical navigation
 ├── requirements.txt            # Python dependencies
-├── README.md                   # System documentation & academic summary
+├── README.md                   # System documentation & clinical workflows
 ├── data/
-│   └── heart_disease_uci.csv   # Authentic UCI Cleveland cardiac cohort (303 records)
+│   └── heart_disease_uci.csv   # Cardiovascular benchmark cohort (303 patient records)
 ├── src/
 │   ├── __init__.py
 │   ├── config.py               # Feature schemas, units, metadata, clinical definitions & styling
-│   ├── data_loader.py          # Data ingestion, schema validation, synthetic generator
+│   ├── data_loader.py          # Data ingestion, schema validation, synthetic demo generator
 │   ├── preprocessing.py        # Imputation, categorical encoding, StandardScaler, OOD checks
 │   ├── clustering.py           # K-Means, Elbow method, Silhouette scoring, PCA, prediction
 │   ├── cluster_analysis.py     # Cluster profiling, ANOVA feature differentiation, comparisons
+│   ├── resource_allocation.py  # Hospital bed modeling, staffing, risk factors & care pathways
 │   └── visualizations.py       # Clinical Plotly interactive visualizations
 └── tests/
     ├── __init__.py
-    ├── test_data_loader.py     # Ingestion, validation, and demo data tests
-    ├── test_preprocessing.py    # Leakage prevention, imputation, and OOD tests
-    ├── test_clustering.py       # K-Means evaluation, fitting, and prediction tests
-    └── test_cluster_analysis.py # Profiling and comparative analytics tests
+    ├── test_data_loader.py     # Ingestion & validation test suite
+    ├── test_preprocessing.py    # Leakage prevention & scaling tests
+    ├── test_clustering.py       # K-Means & prediction tests
+    ├── test_cluster_analysis.py # Phenotypic profiling & comparison tests
+    └── test_resource_allocation.py # Bed allocation, risk factors & pathways tests
 ```
 
 ---
 
-## 📊 Dataset Attribution & Schema
+## 📊 Dataset Schema & Clinical Variables
 
-- **Source:** [UCI Machine Learning Repository: Heart Disease Dataset (Cleveland Foundation)](https://archive.ics.uci.edu/dataset/45/heart+disease)
-- **Principal Investigators:** Robert Detrano, M.D., Ph.D., et al. (1988)
-- **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
 - **Cohort Size:** 303 patient records, 13 clinical attributes + 1 angiographic target.
+- **Integrity Guarantee:** The diagnosis column (`target`) is strictly **excluded** from all clustering features to ensure true unsupervised discovery. Attributes not present in the benchmark dataset (such as BMI, smoking history, or longitudinal visits) are not fabricated.
 
-### Supported Features
+### Clinical Parameters
 1. `age`: Age in years (29 – 77)
 2. `sex`: Biological sex (1 = Male, 0 = Female)
-3. `cp`: Chest pain type (1: Typical angina, 2: Atypical angina, 3: Non-anginal, 4: Asymptomatic)
-4. `trestbps`: Resting blood pressure upon admission (94 – 200 mm Hg)
+3. `cp`: Chest pain presentation (1: Typical angina, 2: Atypical angina, 3: Non-anginal, 4: Asymptomatic)
+4. `trestbps`: Resting systolic blood pressure upon admission (94 – 200 mm Hg)
 5. `chol`: Total serum cholesterol (126 – 564 mg/dl)
 6. `fbs`: Fasting blood sugar > 120 mg/dl (1 = True, 0 = False)
 7. `restecg`: Resting ECG (0: Normal, 1: ST-T abnormality, 2: Left ventricular hypertrophy)
@@ -74,93 +74,68 @@ DWM_Mini_Project/
 12. `ca`: Number of major coronary vessels colored by fluoroscopy (0 – 3)
 13. `thal`: Thallium myocardial scintigraphy (3: Normal, 6: Fixed defect, 7: Reversible defect)
 
-> **Integrity Note:** The angiographic status column (`target`) is strictly **excluded** from all clustering features to ensure true unsupervised discovery. Attributes not present in the public dataset (such as BMI, smoking history, or longitudinal visits) are not fabricated.
+---
+
+## 🖥️ Clinical Views & Workflows
+
+### 1. Clinical Cohort Overview
+- Executive summary metrics: Active census, discovered phenotypes, total beds required, cath lab demand, silhouette cohesion.
+- Automated clinical summary highlighting dominant clusters and primary physiological differentiators.
+- Visual distribution of patient volumes, age distributions, and 2D Principal Component projections.
+
+### 2. Hospital Resource Allocation & Care Pathways
+- Inpatient bed allocation across units: CCU/ICU, Monitored Telemetry Step-Down, and General Cardiology Ward.
+- Cath Lab angiography slots, Echocardiograms, Nuclear SPECT/CT scans, and nurse shifts per day.
+- **Interactive Admissions Simulator:** Adjust projected monthly patient inflow to instantly recalculate bed requirements and facility load.
+- Detailed **"How Hospitals Will Help"** Care Pathway cards per phenotype cluster covering emergency triage, diagnostic pipelines, guideline-directed pharmacotherapy, and post-acute cardiac rehab.
+
+### 3. Patient Registry & Triage Explorer
+- Searchable patient database with anonymized identifiers (`REC-001`, `REC-002`, ...).
+- Filter by cluster, clinical acuity tier, resting SBP threshold (e.g. Stage 2 HTN ≥140 mm Hg), biological sex, and age.
+- Deep-dive clinical card with vitals, ECG stress parameters, and recommended hospital unit.
+- One-click CSV export of filtered records or full cohort.
+
+### 4. Patient Clinical Profile & Intake
+- **Mode A (Existing Patient):** Inspect any cohort record, view distance to centroid, relative similarity to all clusters, radar chart, and delta bar charts showing percentage deviations from cluster averages.
+- **Mode B (New Patient Intake):** Input physiological and stress test metrics to receive instant phenotype matching, out-of-distribution alerts, and immediate bed and care pathway recommendations.
+
+### 5. Cluster Phenotypes & Risk Factors
+- Multi-axis risk radar chart: Ischemic stress burden, Stage 2 hypertension, multi-vessel CAD, perfusion defect rate, and metabolic risk.
+- Standardized Z-score deviation heatmap.
+- Statistical summary cards and side-by-side comparative analytics between any two selected clusters.
+
+### 6. System Diagnostics & Data Management
+- Elbow Curve (Inertia vs. K) and Silhouette Score Curve.
+- Candidate K diagnostic table and PCA explained variance ratios.
+- Custom CSV upload with automated schema and column compatibility validation.
+- Dataset reset and synthetic cohort generation options.
 
 ---
 
-## 🖥️ Application Navigation & Features
+## 🚀 Running the Platform Locally
 
-### 1. Overview Dashboard
-- Executive KPI summary cards: Total patients, Discovered clusters, Selected K, Cohort Silhouette Score, Data completeness.
-- Automated descriptive cohort summary identifying dominant clusters and distinguishing clinical features.
-- Patient distribution bar chart and proportion donut chart.
-- Age distribution box plots across clusters.
-- Clinical feature cross-cluster comparison.
-- Interactive 2D PCA projection with marked cluster centroids.
-
-### 2. Patient Explorer
-- Searchable and filterable patient database with anonymous identifiers (`REC-001`).
-- Filter by cluster membership, biological sex, and age range.
-- Interactive deep-dive card for inspecting individual clinical metrics.
-- One-click CSV export of filtered records or the complete clustered cohort.
-
-### 3. Patient Profile Analysis
-- **Mode A (Existing Patient):** Select any patient record to display their assigned cluster, distance to centroid, relative similarity to all discovered clusters, multivariate radar chart, and feature-by-feature percentage deviations from the cluster average.
-- **Mode B (Hypothetical Patient):** Interactive form accepting physiological and stress test metrics. Features automated Out-of-Distribution (OOD) checks, pipeline transformation, nearest centroid assignment, and plain-language similarity insights.
-
-### 4. Cluster Insights
-- Neutral, feature-based phenotypic labels (e.g., *"Cluster 0: Patient Cohort with comparatively lower peak exercise heart rate and higher resting blood pressure"*).
-- Population-relative Z-score heatmap displaying normalized multivariate elevations across clusters.
-- Statistical summary cards: mean, median, standard deviation, and categorical frequency breakdowns.
-- Side-by-side comparative analytics between any two selected clusters.
-
-### 5. Model Evaluation
-- Interactive **Elbow Curve** plotting Inertia (SSE) vs. K with active selection markers.
-- **Silhouette Analysis** comparing cluster separation scores across candidate values ($K = 2 \dots 8$).
-- Automated recommendation rationale balancing silhouette scores, SSE drops, and cluster size stability.
-- Diagnostic evaluation table and PCA explained variance ratios.
-
-### 6. Dataset Management
-- Data provenance, license citation, and dataset dimensions.
-- Missing-value audit and completeness ratios.
-- Custom CSV upload workflow with automated schema and feature compatibility validation.
-- Quick switch to synthetic demo cohort or reset to default Cleveland dataset.
-- Export clustered dataset with cluster labels.
-
----
-
-## 🚀 Installation & Local Execution
-
-### 1. Prerequisites
+### 1. Requirements
 - Python 3.10+ (tested on Python 3.12)
-- Git (optional)
 
-### 2. Setup Virtual Environment (Recommended)
-```bash
-# Navigate to project directory
-cd CardioInsight
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-.\venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Run the Streamlit Application
+### 3. Launch the Application
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 Open your browser at `http://localhost:8501`.
 
 ---
 
-## 🧪 Running Automated Tests
+## 🧪 Automated Testing
 
-A comprehensive unit test suite built with `pytest` verifies data ingestion, schema validation, preprocessor leakage prevention, K-Means clustering, out-of-distribution detection, and patient profiling:
+Run the automated test suite with `pytest`:
 
 ```bash
 python -m pytest tests/ -v
 ```
 
-All 10 tests should pass cleanly.
-#   D W M _ M i n i _ P r o j e c t  
- 
+All 14 unit tests verify data loading, preprocessing, K-Means clustering, hospital resource allocation, risk stratification, and patient triage.

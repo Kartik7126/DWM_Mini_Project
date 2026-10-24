@@ -63,7 +63,10 @@ class CardiacClusteringModel:
 
             # Silhouette score is only valid if more than 1 cluster and less than n_samples
             if 1 < len(np.unique(labels)) < n_samples:
-                sil_score = float(silhouette_score(X, labels))
+                if n_samples > 5000:
+                    sil_score = float(silhouette_score(X, labels, sample_size=2000, random_state=self.random_state))
+                else:
+                    sil_score = float(silhouette_score(X, labels))
             else:
                 sil_score = -1.0
 
@@ -158,8 +161,12 @@ class CardiacClusteringModel:
 
         # Calculate final silhouette metrics
         if len(np.unique(self.cluster_labels)) > 1 and X.shape[0] > self.k:
-            self.overall_silhouette = float(silhouette_score(X, self.cluster_labels))
-            self.sample_silhouettes = silhouette_samples(X, self.cluster_labels)
+            if X.shape[0] > 5000:
+                self.overall_silhouette = float(silhouette_score(X, self.cluster_labels, sample_size=2000, random_state=self.random_state))
+                self.sample_silhouettes = np.zeros(X.shape[0])
+            else:
+                self.overall_silhouette = float(silhouette_score(X, self.cluster_labels))
+                self.sample_silhouettes = silhouette_samples(X, self.cluster_labels)
         else:
             self.overall_silhouette = 0.0
             self.sample_silhouettes = np.zeros(X.shape[0])

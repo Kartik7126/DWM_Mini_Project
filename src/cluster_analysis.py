@@ -13,6 +13,7 @@ from src.config import (
     CATEGORICAL_FEATURES,
     THEME_COLORS
 )
+from src.resource_allocation import analyze_cluster_risk_factors
 
 
 def generate_cluster_profiles(
@@ -119,6 +120,9 @@ def generate_cluster_profiles(
             c_id, c_count, c_pct, num_stats, distinguishing_features, cat_stats
         )
 
+        # Compute clinical risk profile and acuity tier
+        risk_profile = analyze_cluster_risk_factors(df_clustered, c_id)
+
         profiles[int(c_id)] = {
             "cluster_id": int(c_id),
             "record_count": c_count,
@@ -127,7 +131,8 @@ def generate_cluster_profiles(
             "narrative": narrative,
             "distinguishing_features": distinguishing_features,
             "numerical_stats": num_stats,
-            "categorical_stats": cat_stats
+            "categorical_stats": cat_stats,
+            "risk_profile": risk_profile
         }
 
     return profiles
